@@ -104,14 +104,15 @@ def draft_email(resume_text: str, profile: dict, skills: list[str], recipient: d
     else:
         ask = f"the {recipient.get('title') or 'open'} role, or any team where the sender's skills fit"
         why = f"the role's requirements: {(recipient.get('description') or '')[:1500]}"
-        who = f"the hiring team at {recipient.get('company')}"
+        who = (f"{recipient['name']}, {recipient.get('position') or 'recruiter'} at {recipient.get('company')}"
+               if recipient.get("name") else f"the hiring team at {recipient.get('company')}")
     try:
         out = chat_json(EMAIL_PROMPT.format(ask=ask, why=why),
                         f"RECIPIENT: {who}\n\nSENDER RESUME:\n{resume_text[:8000]}", max_tokens=1200)
     except Exception:
         out = None
     if out and out.get("body"):
-        clean = lambda s: str(s).replace(" — ", ", ").replace("—", "-").strip()
+        clean = lambda s: str(s).replace(" — ", ", ").replace("—", "-").replace("–", "-").strip()
         return {"subject": clean(out.get("subject", "")), "body": clean(out["body"]), "ai": True}
     return {**_template(profile, skills, recipient, purpose), "ai": False}
 
@@ -130,7 +131,7 @@ def _template(p: dict, skills: list[str], r: dict, purpose: str) -> dict:
         subject = f"Research internship enquiry: {area}"[:70]
         org = r.get("institute", "")
     else:
-        hello = f"Dear {r.get('company', '')} hiring team,"
+        hello = f"Dear {r['name'].split()[0]}," if r.get("name") else f"Dear {r.get('company', '')} hiring team,"
         ask = (f"I am writing about the {r.get('title', 'open')} role, or any team where my skills would be useful. "
                f"The work described in the posting is close to what I have been building.")
         subject = f"Application: {r.get('title', 'open role')}"[:70]

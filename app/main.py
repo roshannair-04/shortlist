@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from app import analysis, jobs, llm, outreach
+from app import analysis, contacts, jobs, llm, outreach
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_UPLOAD = 5 * 1024 * 1024
@@ -64,7 +64,7 @@ def home():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm": bool(os.getenv("GROQ_API_KEY")), "jobs": jobs.configured(),
+    return {"ok": True, "llm": bool(os.getenv("GROQ_API_KEY")), "jobs": jobs.configured(), "hunter": contacts.hunter_configured(),
             "faculty": outreach.institutes()}
 
 
@@ -81,6 +81,21 @@ def analyze(request: Request, resume: UploadFile = File(...), job_description: s
     except Exception:
         raise HTTPException(400, "Couldn't open that file. Make sure it's a valid PDF or DOCX.")
     return {**analysis.analyze(text, job_description), "resume_text": text}
+
+
+@app.post("/api/jd-from-file")
+def jd_from_file(request: Request, file: UploadFile = File(...)):
+    rate_limit(request, "jdfile", 40)
+    data = file.file.read(MAX_UPLOAD + 1)
+    if len(data) > MAX_UPLOAD:
+        raise HTTPException(413, "That file is over 5 MB.")
+    try:
+        text = analysis.parse_resume(file.filename or "", data)  # same PDF/DOCX reader as resumes
+    except ValueError as e:
+        raise HTTPException(400, str(e).replace("Upload a PDF", "Use a PDF"))
+    except Exception:
+        raise HTTPException(400, "Couldn't open that file. Make sure it's a valid PDF or DOCX.")
+    return {"description": text[:15000]}
 
 
 class ResumeIn(BaseModel):
@@ -152,8 +167,26 @@ def faculty(body: FacultyIn, request: Request):
             "matches": outreach.match_professors(vec, skills, body.institute)}
 
 
+class ContactsIn(BaseModel):
+    company: str = Field("", max_length=120)
+    domain: str = Field("", max_length=200)
+    job_description: str = Field("", max_length=15000)
+
+
+@app.post("/api/contacts")
+def find_contacts(body: ContactsIn, request: Request):
+    if not (body.company.strip() or body.domain.strip() or body.job_description.strip()):
+        raise HTTPException(400, "Enter the company name.")
+    rate_limit(request, "contacts", 20)
+    try:
+        return contacts.find_contacts(body.company, body.domain, body.job_description)
+    except requests.RequestException as e:
+        raise upstream(e, "Hunter")
+
+
 class Recipient(BaseModel):
     name: str = Field("", max_length=120)
+    position: str = Field("", max_length=200)
     email: str = Field("", max_length=200)
     institute: str = Field("", max_length=120)
     department: str = Field("", max_length=200)

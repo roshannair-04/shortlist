@@ -8,7 +8,7 @@ const chips = (items, cls = "") => items.map((s) => `<span class="chip ${cls}">$
 const skeleton = (n = 4, cls = "") => `<div class="skel ${cls}">${"<i></i>".repeat(n)}</div>`;
 const errorBox = (msg) => `<div class="error-box" role="alert">${esc(msg)}</div>`;
 
-const state = { file: null, data: null, jd: "", health: {}, recipient: null, purpose: "research" };
+const state = { file: null, data: null, jd: "", jdCompany: "", health: {}, recipient: null, purpose: "research", hrJob: null };
 
 async function api(path, opts) {
   let res;
@@ -27,6 +27,24 @@ async function api(path, opts) {
 }
 const post = (path, payload) =>
   api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+
+/* ---------- theme toggle ---------- */
+
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+const isDark = () => (document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light")) === "dark";
+function syncThemeBtn() {
+  const btn = $("#themeBtn");
+  btn.innerHTML = icon(isDark() ? "sun" : "moon");
+  btn.setAttribute("aria-label", isDark() ? "Switch to light mode" : "Switch to dark mode");
+}
+$("#themeBtn").addEventListener("click", () => {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch { /* private mode: choice lasts this visit only */ }
+  syncThemeBtn();
+});
+darkQuery.addEventListener("change", syncThemeBtn);
+syncThemeBtn();
 
 api("/api/health").then((h) => (state.health = h)).catch(() => {});
 
@@ -76,12 +94,39 @@ $("#fetchJd").addEventListener("click", async () => {
   try {
     const job = await post("/api/job-from-url", { url });
     $("#jd").value = job.description;
+    state.jdCompany = job.company || "";
     msg.textContent = `Loaded${job.title ? `: ${job.title}` : ""}${job.company ? ` at ${job.company}` : ""}`;
   } catch (e) {
     msg.className = "field-msg err";
     msg.textContent = e.message;
   } finally {
     btn.disabled = false;
+  }
+});
+
+$("#jdFile").addEventListener("change", async () => {
+  const f = $("#jdFile").files[0];
+  const msg = $("#jdMsg");
+  msg.className = "field-msg";
+  if (!f) return;
+  if (!/\.(pdf|docx)$/i.test(f.name)) {
+    msg.className = "field-msg err";
+    msg.textContent = "Use a PDF or DOCX file for the job description.";
+    return;
+  }
+  msg.textContent = `Reading ${f.name}...`;
+  const fd = new FormData();
+  fd.append("file", f);
+  try {
+    const r = await api("/api/jd-from-file", { method: "POST", body: fd });
+    $("#jd").value = r.description;
+    state.jdCompany = "";
+    msg.textContent = `Loaded from ${f.name}. Check the text below, then analyze.`;
+  } catch (e) {
+    msg.className = "field-msg err";
+    msg.textContent = e.message;
+  } finally {
+    $("#jdFile").value = "";
   }
 });
 
@@ -385,7 +430,11 @@ function useAsTarget(i) {
 function emailForJob(i) {
   const j = state.jobs[i];
   showTab("outreach");
-  draft({ company: j.company, title: j.title, description: j.description }, "job", `Hiring team, ${j.company}`);
+  setMode("hr");
+  state.hrJob = j;
+  $("#hrCompany").value = j.company || "";
+  $("#hrDomain").value = "";
+  loadContacts();
 }
 
 /* ---------- outreach ---------- */
@@ -394,14 +443,34 @@ function outreachShell() {
   return `
     <div class="outreach">
       <section class="block">
-        <h2>Faculty who work on what you've built</h2>
-        <p class="sub">IIT and IIM professors ranked by how closely their research matches your resume. Pick one to draft an email.</p>
-        <div class="fac-filter"><select id="facFilter" aria-label="Filter by institute"><option value="">All institutes</option><option value="IIT">All IITs</option><option value="IIM">All IIMs</option></select></div>
-        <div id="facOut">${skeleton(4, "tall")}</div>
+        <div class="seg" role="tablist" aria-label="Who to email">
+          <button type="button" role="tab" data-mode="hr" aria-selected="true">${icon("buildings")}Company HR</button>
+          <button type="button" role="tab" data-mode="faculty" aria-selected="false">${icon("graduation-cap")}Faculty</button>
+        </div>
+
+        <div id="mode-hr">
+          <h2>Recruiters at the company</h2>
+          <p class="sub">Names and emails from your job post, the company's public HR emails, and its careers page.</p>
+          <form class="hr-form" id="hrForm">
+            <label>Company <input type="text" id="hrCompany" maxlength="120" placeholder="e.g. Cvent" value="${esc(state.jdCompany)}"></label>
+            <label><span>Website <span class="optional">optional</span></span><input type="text" id="hrDomain" maxlength="200" placeholder="cvent.com"></label>
+            <button class="btn btn-primary" type="submit">${icon("magnifying-glass")}Find</button>
+          </form>
+          <div id="hrOut"><div class="empty">${icon("buildings")}<strong>Find who's hiring</strong>${state.jd
+            ? "Enter the company (or leave it empty and we'll read it from your job description) and press Find."
+            : "Enter a company name and press Find, or use Email on any listing in the Jobs tab."}</div></div>
+        </div>
+
+        <div id="mode-faculty" hidden>
+          <h2>Faculty who work on what you've built</h2>
+          <p class="sub">IIT and IIM professors ranked by how closely their research matches your resume. Pick one to draft an email.</p>
+          <div class="fac-filter"><select id="facFilter" aria-label="Filter by institute"><option value="">All institutes</option><option value="IIT">All IITs</option><option value="IIM">All IIMs</option></select></div>
+          <div id="facOut">${skeleton(4, "tall")}</div>
+        </div>
       </section>
       <section class="panel block composer" id="composer">
         <h2>Draft</h2>
-        <p class="to" id="composeTo">Choose a professor or a job to start a draft.</p>
+        <p class="to" id="composeTo">Choose a recruiter or a professor to start a draft.</p>
         <div class="field"><label class="field-label" for="mailSubject">Subject</label><input type="text" id="mailSubject"></div>
         <div class="field"><label class="field-label" for="mailBody">Message</label><textarea id="mailBody"></textarea></div>
         <div class="composer-actions">
@@ -415,8 +484,63 @@ function outreachShell() {
     </div>`;
 }
 
+function setMode(mode) {
+  document.querySelectorAll(".seg [data-mode]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === mode)));
+  $("#mode-hr").hidden = mode !== "hr";
+  $("#mode-faculty").hidden = mode !== "faculty";
+}
+
+async function loadContacts() {
+  const out = $("#hrOut");
+  const company = $("#hrCompany").value.trim();
+  const jd = state.hrJob ? `${state.hrJob.title} at ${state.hrJob.company}\n\n${state.hrJob.description}` : state.jd;
+  if (!company && !jd) {
+    out.innerHTML = errorBox("Enter the company name.");
+    return;
+  }
+  out.innerHTML = skeleton(3, "tall");
+  try {
+    const r = await post("/api/contacts", { company, domain: $("#hrDomain").value.trim(), job_description: jd });
+    if (r.company && !company) $("#hrCompany").value = r.company;
+    if (r.domain && !$("#hrDomain").value.trim()) $("#hrDomain").value = r.domain;
+    state.contacts = r.contacts;
+    const title = state.hrJob ? state.hrJob.title : "";
+    const team = { company: r.company || company, title, description: jd };
+    const rows = r.contacts.map((c, i) => `
+      <li><button class="fac" type="button" data-contact="${i}" aria-pressed="false">
+        <span class="fac-name">${esc(c.name || c.email)}</span>
+        ${c.confidence ? `<span class="fit" title="Hunter.io confidence">${c.confidence}%</span>` : "<span></span>"}
+        <span class="fac-org">${esc([c.position, c.name ? c.email : ""].filter(Boolean).join(". "))}</span>
+        <span class="fac-int">From ${esc(c.source)}</span>
+      </button>${c.linkedin ? `<a class="row-link" href="${esc(safeUrl(c.linkedin))}" target="_blank" rel="noopener">${icon("linkedin-logo")}LinkedIn profile</a>` : ""}</li>`).join("");
+    const links = r.links.length ? `<div class="linkedin">${icon("linkedin-logo")}<span>Search more:</span>${r.links
+      .map((l) => `<a class="btn btn-ghost btn-sm" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${esc(l.label)}${icon("arrow-square-out")}</a>`).join("")}</div>` : "";
+    const none = `<div class="empty">${icon("user-circle")}<strong>No contacts found${r.company ? ` for ${esc(r.company)}` : ""}</strong>${r.hunter
+      ? "Try the company's website domain, or search LinkedIn below."
+      : "Only the job post and company website were checked. Set HUNTER_API_KEY on the server to search public HR emails."}</div>`;
+    out.innerHTML = `${rows ? `<ul class="faclist">${rows}</ul>` : none}
+      <button class="btn btn-ghost btn-sm" type="button" id="teamDraft" style="margin-top:12px">${icon("envelope-simple")}Write to the hiring team instead</button>
+      ${links}
+      ${rows ? `<p class="hint">Emails come from public sources and can be out of date. "Guessed" addresses follow the company's usual format and may bounce.</p>` : ""}`;
+    out.querySelectorAll("[data-contact]").forEach((b) => b.addEventListener("click", () => {
+      out.querySelectorAll("[data-contact]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      const c = state.contacts[+b.dataset.contact];
+      draft({ ...team, name: c.name, position: c.position, email: c.email }, "job", c.name ? `${c.name} <${c.email}>` : c.email);
+    }));
+    $("#teamDraft").addEventListener("click", () => draft(team, "job", `Hiring team, ${team.company || "the company"}`));
+  } catch (e) {
+    out.innerHTML = errorBox(e.message);
+  }
+}
+
 function bindComposer() {
   $("#facFilter").addEventListener("change", loadFaculty);
+  document.querySelectorAll(".seg [data-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  $("#hrForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    state.hrJob = null;
+    loadContacts();
+  });
   ["mailSubject", "mailBody"].forEach((id) => $(`#${id}`).addEventListener("input", syncLinks));
   $("#copyBtn").addEventListener("click", async () => {
     const btn = $("#copyBtn");

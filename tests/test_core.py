@@ -70,3 +70,23 @@ def test_jobs_ranked_and_trends_counted(monkeypatch):
     assert out["jobs"][0]["company"] == "B"
     assert {"skill": "Python", "count": 2, "have": True} in out["trends"]
     assert "Pune%2C+India" in out["linkedin"][0]["url"]
+
+
+def test_contacts_merge_jd_hunter_and_guess(monkeypatch):
+    import app.contacts as C
+
+    jd = "Cvent is hiring an SDE intern in Gurugram. Questions? Write to campus.hiring@cvent.com."
+    monkeypatch.setattr(C, "chat_json", lambda *a, **k: {"company": "Cvent", "website": "",
+                        "contacts": [{"name": "Priya Sharma", "position": "Talent Acquisition", "email": ""}]})
+    monkeypatch.setenv("HUNTER_API_KEY", "x")
+    monkeypatch.setattr(C, "_hunter", lambda company, domain, **kw: {
+        "domain": "cvent.com", "organization": "Cvent", "pattern": "{first}.{last}",
+        "emails": [{"value": "a.rao@cvent.com", "first_name": "Anil", "last_name": "Rao", "position": "HR Manager", "confidence": 80},
+                   {"value": "k.das@cvent.com", "first_name": "Kavya", "last_name": "Das", "position": "Recruiter", "confidence": 95}]})
+    out = C.find_contacts("", "", jd)
+    emails = [c["email"] for c in out["contacts"]]
+    assert out["company"] == "Cvent" and out["domain"] == "cvent.com"
+    assert "priya.sharma@cvent.com" in emails and "campus.hiring@cvent.com" in emails
+    assert emails.index("k.das@cvent.com") < emails.index("a.rao@cvent.com")  # sorted by confidence
+    assert "linkedin.com" in out["links"][0]["url"]
+    assert C.clean_domain("https://www.Cvent.com/careers") == "cvent.com" and C.clean_domain("not a site") == ""

@@ -2,11 +2,12 @@
 
 Resume analysis, live job matches and cold outreach in one page. Upload a resume and Shortlist:
 
-- **Scores it against a job**: exact skill coverage plus semantic similarity, with the missing skills listed. Paste the description, or paste a job link and it's scraped for you.
+- **Scores it against a job**: exact skill coverage plus semantic similarity, with the missing skills listed. Paste the description, upload it as a PDF/DOCX, or paste a job link and it's scraped for you.
 - **Checks ATS readiness** with deterministic rules (sections, contact details, measurable impact, length, keywords). Each failed check comes with the specific fix.
 - **Writes a recruiter-style review** (LLM, via Groq) with concrete bullet rewrites.
 - **Finds live openings** for your best-fit roles from LinkedIn, Indeed, Glassdoor, Naukri and company career pages (via JSearch). Each one is ranked by fit to your resume. It also shows which skills those employers ask for most, so you can see which ones you're missing.
-- **Drafts cold emails** to 1,600+ IIT and IIM faculty whose research matches your projects, or to the hiring team behind any listing. One click opens the draft in Gmail.
+- **Finds the recruiters** for a job: names and emails written in the JD, the company's public HR emails (Hunter.io), and its careers page, plus LinkedIn searches to open yourself.
+- **Drafts cold emails** to those recruiters, or to 1,600+ IIT and IIM faculty whose research matches your projects. One click opens the draft in Gmail.
 
 ![Overview](docs/overview.png)
 
@@ -36,6 +37,7 @@ resume (PDF/DOCX) ──► parse (pdfplumber / python-docx, in memory)
 | `app/analysis.py` | Parsing, skill extraction, ATS checks, match score, role fit |
 | `app/jobs.py` | JSearch client, skill-demand trends, job-page scraper |
 | `app/outreach.py` | Faculty matching and email drafting (LLM with a template fallback) |
+| `app/contacts.py` | Recruiter / HR contact finder (JD, Hunter.io, careers page, LinkedIn search links) |
 | `app/llm.py` | Groq client and the review prompt |
 | `frontend/` | Single page, plain HTML/CSS/JS, no build step |
 
@@ -61,6 +63,7 @@ Every key is optional. Without them the app still scores resumes, still shows Li
 | `GROQ_MODEL` | Override the model (default `openai/gpt-oss-120b`) | [Groq models](https://console.groq.com/docs/models) |
 | `OPENWEBNINJA_API_KEY` | Live job listings | Free plan on [OpenWeb Ninja](https://www.openwebninja.com/) (the JSearch provider). Results are cached for 6 hours to save quota. |
 | `RAPIDAPI_KEY` | Live job listings, alternative | Use instead if you subscribe to [JSearch on RapidAPI](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) |
+| `HUNTER_API_KEY` | Recruiter emails for a company | Free plan at [hunter.io](https://hunter.io/api-keys) (about 50 searches/month; results cached for 7 days) |
 | `PROFESSORS_CSV` | Faculty matching | Path to the faculty CSV (see below) |
 
 ## Deploy on Render
@@ -68,7 +71,7 @@ Every key is optional. Without them the app still scores resumes, still shows Li
 The repo has a `Dockerfile`, so the existing Render web service keeps working:
 
 1. Push this branch and point the service at it (or merge to `main`).
-2. In **Environment**, add `GROQ_API_KEY` and `OPENWEBNINJA_API_KEY`. Delete the old `TRANSFORMERS_CACHE`; nothing uses it now.
+2. In **Environment**, add `GROQ_API_KEY`, `OPENWEBNINJA_API_KEY` and `HUNTER_API_KEY`. Delete the old `TRANSFORMERS_CACHE`; nothing uses it now.
 3. In **Environment > Secret Files**, add a file named `professors.csv` and set `PROFESSORS_CSV=/etc/secrets/professors.csv`.
 4. Set **Health Check Path** to `/api/health`.
 

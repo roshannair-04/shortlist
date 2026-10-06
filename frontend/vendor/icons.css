@@ -47,6 +47,9 @@
 .ph.ph-briefcase:before {
   content: "\e0ee";
 }
+.ph.ph-buildings:before {
+  content: "\e102";
+}
 .ph.ph-chart-bar:before {
   content: "\e150";
 }
@@ -101,11 +104,17 @@
 .ph.ph-magnifying-glass:before {
   content: "\e30c";
 }
+.ph.ph-moon:before {
+  content: "\e330";
+}
 .ph.ph-note:before {
   content: "\e348";
 }
 .ph.ph-paper-plane-tilt:before {
   content: "\e398";
+}
+.ph.ph-paperclip:before {
+  content: "\e39a";
 }
 .ph.ph-plug:before {
   content: "\e946";
@@ -113,11 +122,17 @@
 .ph.ph-stack:before {
   content: "\e466";
 }
+.ph.ph-sun:before {
+  content: "\e472";
+}
 .ph.ph-tabs:before {
   content: "\e778";
 }
 .ph.ph-upload-simple:before {
   content: "\e4c0";
+}
+.ph.ph-user-circle:before {
+  content: "\e4c4";
 }
 .ph.ph-x:before {
   content: "\e4f6";

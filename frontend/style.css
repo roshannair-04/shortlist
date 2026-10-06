@@ -38,8 +38,9 @@
   color-scheme: light dark;
 }
 
+/* Dark tokens: follow the system unless the visitor picked a theme with the toggle. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0c0c0e;
     --surface: #141417;
     --surface-2: #1c1c20;
@@ -57,6 +58,25 @@
     --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
   }
 }
+:root[data-theme="dark"] {
+  --bg: #0c0c0e;
+  --surface: #141417;
+  --surface-2: #1c1c20;
+  --line: #27272a;
+  --line-strong: #3f3f46;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #8b8b94;
+  --accent: #34d399;
+  --accent-bg: #10b981;
+  --on-accent: #04261a;
+  --accent-soft: rgb(52 211 153 / 0.1);
+  --accent-line: rgb(52 211 153 / 0.3);
+  --danger: #f87171;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -86,6 +106,10 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .nav-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: 14px; }
 .nav-link:hover { color: var(--text); }
 .nav-link .ph { font-size: 18px; }
+.nav-actions { display: flex; align-items: center; gap: 18px; }
+.theme-btn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.theme-btn:hover { color: var(--text); border-color: var(--line-strong); }
+.theme-btn .ph { font-size: 18px; }
 
 /* ---------- hero ---------- */
 .hero {
@@ -158,6 +182,8 @@ textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
 input::placeholder, textarea::placeholder { color: var(--faint); }
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 select { appearance: none; padding-right: 32px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.field-actions { display: inline-flex; gap: 14px; }
+.field-actions label.text-btn { cursor: pointer; }
 .url-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px; }
 
 .btn {
@@ -337,6 +363,14 @@ details.passed .check { padding: 8px 0; }
 
 /* outreach */
 .outreach { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; align-items: start; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r); background: var(--surface-2); margin-bottom: 20px; }
+.seg button { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-weight: 500; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+.hr-form { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 16px; }
+.hr-form label { font-size: 12.5px; color: var(--muted); display: grid; gap: 6px; }
+.hr-form input { height: 42px; font-size: 15px; color: var(--text); }
+.row-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--accent); margin: 6px 0 2px 16px; text-decoration: none; }
+.row-link:hover { text-decoration: underline; }
 .fac-filter { display: flex; gap: 8px; margin-bottom: 14px; }
 .fac-filter select { max-width: 240px; }
 .faclist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 760px; overflow: auto; padding-right: 4px; }
@@ -406,6 +440,8 @@ details.passed .check { padding: 8px 0; }
   .summary > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .controls { grid-template-columns: 1fr 1fr; }
   .controls .btn { grid-column: 1 / -1; }
+  .hr-form { grid-template-columns: 1fr 1fr; }
+  .hr-form .btn { grid-column: 1 / -1; }
 }
 @media (max-width: 600px) {
   .wrap { padding-left: 16px; padding-right: 16px; }

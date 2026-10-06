@@ -11,6 +11,10 @@
 <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23059669'/%3E%3Crect x='8' y='9' width='16' height='3' rx='1.5' fill='white'/%3E%3Crect x='8' y='15' width='11' height='3' rx='1.5' fill='white'/%3E%3Crect x='8' y='21' width='7' height='3' rx='1.5' fill='white'/%3E%3C/svg%3E">
 <link rel="preload" href="/static/vendor/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  // Apply a saved theme before first paint so the page doesn't flash.
+  try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <link rel="stylesheet" href="/static/vendor/icons.css">
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -21,9 +25,12 @@
     <a class="brand" href="/" aria-label="Shortlist home">
       <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Shortlist
     </a>
-    <a class="nav-link" href="https://github.com/roshannair-04/resume-intelligence-ai" target="_blank" rel="noopener">
-      <i class="ph ph-github-logo" aria-hidden="true"></i><span>Source</span>
-    </a>
+    <div class="nav-actions">
+      <a class="nav-link" href="https://github.com/roshannair-04/resume-intelligence-ai" target="_blank" rel="noopener">
+        <i class="ph ph-github-logo" aria-hidden="true"></i><span>Source</span>
+      </a>
+      <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch to dark mode"><i class="ph ph-moon" aria-hidden="true"></i></button>
+    </div>
   </div>
 </header>
 
@@ -31,7 +38,7 @@
   <section class="hero wrap">
     <div class="hero-copy">
       <h1>See your resume the way a recruiter does.</h1>
-      <p class="lede">Score it against any job, find live openings that fit, and draft cold emails to 1,600+ IIT and IIM faculty.</p>
+      <p class="lede">Score it against any job, find openings that fit, and cold-email recruiters or 1,600+ IIT and IIM faculty.</p>
     </div>
 
     <form id="form" class="panel" novalidate>
@@ -46,7 +53,11 @@
       <div class="field">
         <div class="field-row">
           <label class="field-label" for="jd">Target job <span class="optional">optional</span></label>
-          <button type="button" class="text-btn" id="urlToggle"><i class="ph ph-link-simple" aria-hidden="true"></i>Paste a job link</button>
+          <span class="field-actions">
+            <label class="text-btn" for="jdFile"><i class="ph ph-paperclip" aria-hidden="true"></i>Upload JD file</label>
+            <input type="file" id="jdFile" accept=".pdf,.docx" hidden>
+            <button type="button" class="text-btn" id="urlToggle"><i class="ph ph-link-simple" aria-hidden="true"></i>Paste a job link</button>
+          </span>
         </div>
         <div class="url-row" id="urlRow" hidden>
           <input type="url" id="jobUrl" placeholder="https://jobs.lever.co/company/role" aria-label="Job posting URL">
