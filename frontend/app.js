@@ -459,6 +459,15 @@ function outreachShell() {
           <div id="hrOut"><div class="empty">${icon("buildings")}<strong>Find who's hiring</strong>${state.jd
             ? "Enter the company (or leave it empty and we'll read it from your job description) and press Find."
             : "Enter a company name and press Find, or use Email on any listing in the Jobs tab."}</div></div>
+          <form class="guess" id="guessForm">
+            <h3>Found someone on LinkedIn?</h3>
+            <p class="sub">Type their name and we'll suggest their work email, using the formats most companies follow.</p>
+            <div class="guess-row">
+              <input type="text" id="guessName" maxlength="80" placeholder="e.g. Priya Sharma" aria-label="Their full name">
+              <button class="btn btn-ghost" type="submit">Suggest emails</button>
+            </div>
+            <div id="guessOut"></div>
+          </form>
         </div>
 
         <div id="mode-faculty" hidden>
@@ -490,6 +499,45 @@ function setMode(mode) {
   $("#mode-faculty").hidden = mode !== "faculty";
 }
 
+// Most common corporate formats first (first.last is by far the most used).
+const EMAIL_FORMATS = [
+  (f, l) => `${f}.${l}`, (f) => f, (f, l) => `${f[0]}${l}`, (f, l) => `${f}${l}`,
+  (f, l) => `${f}_${l}`, (f, l) => `${f[0]}.${l}`, (f, l) => `${f}${l[0]}`, (f, l) => l,
+];
+const cleanDomain = (v) => v.trim().toLowerCase().replace(/^[a-z]+:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0];
+
+function guessEmails(name, domain) {
+  const parts = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/\b(mr|ms|mrs|dr|prof)\.?\s+/g, "").replace(/[^a-z\s]/g, "").split(/\s+/).filter(Boolean);
+  if (!parts.length) return [];
+  const f = parts[0], l = parts.length > 1 ? parts[parts.length - 1] : "";
+  const users = l ? EMAIL_FORMATS.map((fmt) => fmt(f, l)) : [f];
+  return [...new Set(users)].map((u) => `${u}@${domain}`);
+}
+
+function teamInfo() {
+  const jd = state.hrJob ? `${state.hrJob.title} at ${state.hrJob.company}\n\n${state.hrJob.description}` : state.jd;
+  return { company: $("#hrCompany").value.trim(), title: state.hrJob ? state.hrJob.title : "", description: jd };
+}
+
+function suggestEmails() {
+  const out = $("#guessOut");
+  const name = $("#guessName").value.trim().replace(/\s+/g, " ");
+  const domain = cleanDomain($("#hrDomain").value);
+  if (!name) { out.innerHTML = errorBox("Type the person's full name."); return; }
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(domain)) {
+    out.innerHTML = errorBox("Add the company's website above first, for example cvent.com.");
+    return;
+  }
+  const emails = guessEmails(name, domain);
+  out.innerHTML = `<div class="guess-list">${emails.map((e, i) => `<button type="button" class="chip ${i === 0 ? "have" : ""}" data-guess="${esc(e)}">${esc(e)}${i === 0 ? ' <span class="n">most likely</span>' : ""}</button>`).join("")}</div>
+    <p class="hint">These are guesses, not verified addresses. Pick one to draft; if it bounces, try the next.</p>`;
+  out.querySelectorAll("[data-guess]").forEach((b) => b.addEventListener("click", () => {
+    const email = b.dataset.guess;
+    draft({ ...teamInfo(), name, position: "", email }, "job", `${name} <${email}>`);
+  }));
+}
+
 async function loadContacts() {
   const out = $("#hrOut");
   const company = $("#hrCompany").value.trim();
@@ -517,7 +565,7 @@ async function loadContacts() {
       .map((l) => `<a class="btn btn-ghost btn-sm" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${esc(l.label)}${icon("arrow-square-out")}</a>`).join("")}</div>` : "";
     const none = `<div class="empty">${icon("user-circle")}<strong>No contacts found${r.company ? ` for ${esc(r.company)}` : ""}</strong>${r.hunter
       ? "Try the company's website domain, or search LinkedIn below."
-      : "Only the job post and company website were checked. Set HUNTER_API_KEY on the server to search public HR emails."}</div>`;
+      : "Use the LinkedIn searches below to find a recruiter, then type their name under \"Found someone on LinkedIn?\""}</div>`;
     out.innerHTML = `${rows ? `<ul class="faclist">${rows}</ul>` : none}
       <button class="btn btn-ghost btn-sm" type="button" id="teamDraft" style="margin-top:12px">${icon("envelope-simple")}Write to the hiring team instead</button>
       ${links}
@@ -536,6 +584,10 @@ async function loadContacts() {
 function bindComposer() {
   $("#facFilter").addEventListener("change", loadFaculty);
   document.querySelectorAll(".seg [data-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  $("#guessForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    suggestEmails();
+  });
   $("#hrForm").addEventListener("submit", (e) => {
     e.preventDefault();
     state.hrJob = null;

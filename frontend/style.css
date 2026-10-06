@@ -371,6 +371,13 @@ details.passed .check { padding: 8px 0; }
 .hr-form input { height: 42px; font-size: 15px; color: var(--text); }
 .row-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--accent); margin: 6px 0 2px 16px; text-decoration: none; }
 .row-link:hover { text-decoration: underline; }
+.guess { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+.guess h3 { font-size: 1rem; font-weight: 600; margin: 0 0 4px; }
+.guess-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.guess-row input { height: 42px; }
+.guess-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+button.chip { cursor: pointer; font: inherit; font-size: 13px; }
+button.chip:hover { border-color: var(--accent); }
 .fac-filter { display: flex; gap: 8px; margin-bottom: 14px; }
 .fac-filter select { max-width: 240px; }
 .faclist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 760px; overflow: auto; padding-right: 4px; }

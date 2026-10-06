@@ -6,7 +6,7 @@ Resume analysis, live job matches and cold outreach in one page. Upload a resume
 - **Checks ATS readiness** with deterministic rules (sections, contact details, measurable impact, length, keywords). Each failed check comes with the specific fix.
 - **Writes a recruiter-style review** (LLM, via Groq) with concrete bullet rewrites.
 - **Finds live openings** for your best-fit roles from LinkedIn, Indeed, Glassdoor, Naukri and company career pages (via JSearch). Each one is ranked by fit to your resume. It also shows which skills those employers ask for most, so you can see which ones you're missing.
-- **Finds the recruiters** for a job: names and emails written in the JD, the company's public HR emails (Hunter.io), and its careers page, plus LinkedIn searches to open yourself.
+- **Finds the recruiters** for a job: names and emails written in the JD, the company's careers page, and (optionally) its public HR emails from Hunter.io. LinkedIn searches open in your own browser; type a name you find there and it suggests their likely work email from common company formats.
 - **Drafts cold emails** to those recruiters, or to 1,600+ IIT and IIM faculty whose research matches your projects. One click opens the draft in Gmail.
 
 ![Overview](docs/overview.png)
@@ -63,7 +63,7 @@ Every key is optional. Without them the app still scores resumes, still shows Li
 | `GROQ_MODEL` | Override the model (default `openai/gpt-oss-120b`) | [Groq models](https://console.groq.com/docs/models) |
 | `OPENWEBNINJA_API_KEY` | Live job listings | Free plan on [OpenWeb Ninja](https://www.openwebninja.com/) (the JSearch provider). Results are cached for 6 hours to save quota. |
 | `RAPIDAPI_KEY` | Live job listings, alternative | Use instead if you subscribe to [JSearch on RapidAPI](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) |
-| `HUNTER_API_KEY` | Recruiter emails for a company | Free plan at [hunter.io](https://hunter.io/api-keys) (about 50 searches/month; results cached for 7 days) |
+| `HUNTER_API_KEY` | Optional: public HR emails for a company | Free plan at [hunter.io](https://hunter.io/api-keys) (needs a work or university email to sign up; about 50 searches/month; cached for 7 days). Everything else works without it. |
 | `PROFESSORS_CSV` | Faculty matching | Path to the faculty CSV (see below) |
 
 ## Deploy on Render
@@ -71,7 +71,7 @@ Every key is optional. Without them the app still scores resumes, still shows Li
 The repo has a `Dockerfile`, so the existing Render web service keeps working:
 
 1. Push this branch and point the service at it (or merge to `main`).
-2. In **Environment**, add `GROQ_API_KEY`, `OPENWEBNINJA_API_KEY` and `HUNTER_API_KEY`. Delete the old `TRANSFORMERS_CACHE`; nothing uses it now.
+2. In **Environment**, add `GROQ_API_KEY` and `OPENWEBNINJA_API_KEY` (and `HUNTER_API_KEY` if you have one). Delete the old `TRANSFORMERS_CACHE`; nothing uses it now.
 3. In **Environment > Secret Files**, add a file named `professors.csv` and set `PROFESSORS_CSV=/etc/secrets/professors.csv`.
 4. Set **Health Check Path** to `/api/health`.
 
