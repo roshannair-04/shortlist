@@ -1,0 +1,124 @@
+/* Phosphor Icons (MIT), subset to the glyph classes this app uses. */
+@font-face {
+  font-family: "Phosphor";
+  src: url("Phosphor.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.ph {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "Phosphor" !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Enable Ligatures ================ */
+  letter-spacing: 0;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga=1";
+  -moz-font-feature-settings: "liga";
+  -ms-font-feature-settings: "liga" 1;
+  font-feature-settings: "liga";
+  -webkit-font-variant-ligatures: discretionary-ligatures;
+  font-variant-ligatures: discretionary-ligatures;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ph.ph-arrow-clockwise:before {
+  content: "\e036";
+}
+.ph.ph-arrow-right:before {
+  content: "\e06c";
+}
+.ph.ph-arrow-square-out:before {
+  content: "\e5de";
+}
+.ph.ph-arrow-up-right:before {
+  content: "\e092";
+}
+.ph.ph-briefcase:before {
+  content: "\e0ee";
+}
+.ph.ph-chart-bar:before {
+  content: "\e150";
+}
+.ph.ph-check:before {
+  content: "\e182";
+}
+.ph.ph-check-circle:before {
+  content: "\e184";
+}
+.ph.ph-checks:before {
+  content: "\e53a";
+}
+.ph.ph-circle-dashed:before {
+  content: "\e602";
+}
+.ph.ph-circle-notch:before {
+  content: "\eb44";
+}
+.ph.ph-copy:before {
+  content: "\e1ca";
+}
+.ph.ph-drop:before {
+  content: "\e210";
+}
+.ph.ph-empty:before {
+  content: "\edbc";
+}
+.ph.ph-envelope-simple:before {
+  content: "\e218";
+}
+.ph.ph-file:before {
+  content: "\e230";
+}
+.ph.ph-file-text:before {
+  content: "\e23a";
+}
+.ph.ph-github-logo:before {
+  content: "\e576";
+}
+.ph.ph-graduation-cap:before {
+  content: "\e62c";
+}
+.ph.ph-info:before {
+  content: "\e2ce";
+}
+.ph.ph-link-simple:before {
+  content: "\e2e6";
+}
+.ph.ph-linkedin-logo:before {
+  content: "\e2ee";
+}
+.ph.ph-magnifying-glass:before {
+  content: "\e30c";
+}
+.ph.ph-note:before {
+  content: "\e348";
+}
+.ph.ph-paper-plane-tilt:before {
+  content: "\e398";
+}
+.ph.ph-plug:before {
+  content: "\e946";
+}
+.ph.ph-stack:before {
+  content: "\e466";
+}
+.ph.ph-tabs:before {
+  content: "\e778";
+}
+.ph.ph-upload-simple:before {
+  content: "\e4c0";
+}
+.ph.ph-x:before {
+  content: "\e4f6";
+}

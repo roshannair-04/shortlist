@@ -1,64 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<title>AI Resume Intelligence</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shortlist: resume analysis, job matches and outreach</title>
+<meta name="description" content="Score your resume against any job, find live openings that fit, and draft cold emails to the right people.">
+<meta property="og:title" content="Shortlist">
+<meta property="og:description" content="Score your resume against any job, find live openings that fit, and draft cold emails to the right people.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23059669'/%3E%3Crect x='8' y='9' width='16' height='3' rx='1.5' fill='white'/%3E%3Crect x='8' y='15' width='11' height='3' rx='1.5' fill='white'/%3E%3Crect x='8' y='21' width='7' height='3' rx='1.5' fill='white'/%3E%3C/svg%3E">
+<link rel="preload" href="/static/vendor/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/vendor/icons.css">
 <link rel="stylesheet" href="/static/style.css">
-
 </head>
+<body>
 
-<body class="bg-black text-white">
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/" aria-label="Shortlist home">
+      <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>Shortlist
+    </a>
+    <a class="nav-link" href="https://github.com/roshannair-04/resume-intelligence-ai" target="_blank" rel="noopener">
+      <i class="ph ph-github-logo" aria-hidden="true"></i><span>Source</span>
+    </a>
+  </div>
+</header>
 
-<div id="particles-js"></div>
+<main>
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <h1>See your resume the way a recruiter does.</h1>
+      <p class="lede">Score it against any job, find live openings that fit, and draft cold emails to 1,600+ IIT and IIM faculty.</p>
+    </div>
 
-<div class="container mx-auto p-10 relative z-20">
+    <form id="form" class="panel" novalidate>
+      <label class="field-label" for="resume">Resume</label>
+      <label class="drop" id="drop" for="resume">
+        <input type="file" id="resume" name="resume" accept=".pdf,.docx" required>
+        <i class="ph ph-upload-simple" aria-hidden="true"></i>
+        <span class="drop-title" id="dropTitle">Drop your resume or browse</span>
+        <span class="drop-hint" id="dropHint">PDF or DOCX, up to 5 MB</span>
+      </label>
 
-<h1 class="text-4xl font-bold mb-6 text-center">
-AI Resume Intelligence
-</h1>
+      <div class="field">
+        <div class="field-row">
+          <label class="field-label" for="jd">Target job <span class="optional">optional</span></label>
+          <button type="button" class="text-btn" id="urlToggle"><i class="ph ph-link-simple" aria-hidden="true"></i>Paste a job link</button>
+        </div>
+        <div class="url-row" id="urlRow" hidden>
+          <input type="url" id="jobUrl" placeholder="https://jobs.lever.co/company/role" aria-label="Job posting URL">
+          <button type="button" class="btn btn-ghost" id="fetchJd">Fetch</button>
+        </div>
+        <textarea id="jd" rows="5" placeholder="Paste the job description to get a match score. Leave empty to see your best-fit roles."></textarea>
+        <p class="field-msg" id="jdMsg" role="status"></p>
+      </div>
 
-<div class="bg-slate-900/70 backdrop-blur-xl p-6 rounded-xl shadow-lg">
+      <button class="btn btn-primary btn-block" id="analyzeBtn" type="submit">
+        <span>Analyze resume</span><i class="ph ph-arrow-right" aria-hidden="true"></i>
+      </button>
+      <p class="form-error" id="formError" role="alert"></p>
+      <p class="privacy">Your file is read in memory and never stored.</p>
+    </form>
+  </section>
 
-<label class="block text-sm mb-2">Upload Resume</label>
+  <section id="results" class="results wrap" hidden aria-live="polite"></section>
+</main>
 
-<div id="uploadBox"
-class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition">
-
-<p class="text-gray-400">
-Click to upload resume
-</p>
-
-<p class="text-xs text-gray-500 mt-2">
-PDF or DOCX
-</p>
-
-<input type="file" id="resume" class="hidden">
-
-</div>
-
-<label class="block mb-2 mt-6">Job Description</label>
-
-<textarea id="jobdesc" rows="6"
-class="w-full p-3 text-black rounded mb-4"></textarea>
-
-<button id="analyzeBtn"
-class="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-xl font-semibold shadow-lg">
-Analyze Resume
-</button>
-
-</div>
-
-<div id="results" class="mt-10"></div>
-
-</div>
+<footer class="footer wrap">
+  <span>Built by Roshan Nair</span>
+  <a href="https://github.com/roshannair-04/resume-intelligence-ai" target="_blank" rel="noopener">GitHub</a>
+</footer>
 
 <script src="/static/app.js"></script>
-
 </body>
 </html>

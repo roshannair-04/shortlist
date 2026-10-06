@@ -1,62 +1,15 @@
-# Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-
-# Virtual environments
+.venv/
 venv/
-env/
 .env
-.resume/
-conda-env/
-.resume-env/
-
-# Conda
-*.conda
-*.env
-
-# HuggingFace model cache
-.cache/
-hf_cache/
-huggingface/
-
-# Data files (optional)
-*.db
-*.sqlite3
-
-# MacOS junk
+.env.*
 .DS_Store
-
-# Logs
-*.log
-
-# Temporary files
-temp_*
-*.tmp
-
-# Node modules (if you add frontend tools later)
-node_modules/
-
-# VS Code
 .vscode/
+.models/
+.pytest_cache/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Build folders
-build/
-dist/
-
-# Python packaging
-*.egg-info/
-
-# Secrets
-.env
-.env.local
-
-# Model weights (if you add large models later)
-*.bin
-*.safetensors
-*.pt
-*.pth
+# Private data: faculty directory (deploy as a Render secret file) and personal resumes
+data/professors.csv
+tests/*.pdf
+*.resume.pdf

@@ -1,159 +1,95 @@
-# AI Resume Intelligence Engine
+# Shortlist
 
-An AI-powered resume analysis system that evaluates resumes against job descriptions using semantic embeddings and intelligent skill extraction.
+Resume analysis, live job matches and cold outreach in one page. Upload a resume and Shortlist:
 
-The system performs:
+- **Scores it against a job**: exact skill coverage plus semantic similarity, with the missing skills listed. Paste the description, or paste a job link and it's scraped for you.
+- **Checks ATS readiness** with deterministic rules (sections, contact details, measurable impact, length, keywords). Each failed check comes with the specific fix.
+- **Writes a recruiter-style review** (LLM, via Groq) with concrete bullet rewrites.
+- **Finds live openings** for your best-fit roles from LinkedIn, Indeed, Glassdoor, Naukri and company career pages (via JSearch). Each one is ranked by fit to your resume. It also shows which skills those employers ask for most, so you can see which ones you're missing.
+- **Drafts cold emails** to 1,600+ IIT and IIM faculty whose research matches your projects, or to the hiring team behind any listing. One click opens the draft in Gmail.
 
-• Resume parsing  
-• Skill extraction using embeddings  
-• Job description matching  
-• Missing skill detection  
-• Career role prediction (40+ roles)  
-• ATS-style resume scoring  
-• Evidence extraction from resumes  
+![Overview](docs/overview.png)
 
----
+| Jobs | Cold email |
+| --- | --- |
+| ![Jobs](docs/jobs.png) | ![Cold email](docs/outreach.png) |
 
-# Features
+## How it works
 
-### Resume Parsing
-Extracts text from PDF resumes.
-
-### Skill Detection
-Uses semantic similarity to detect technical skills from resume text.
-
-### Job Matching
-Compares resume and job description using sentence embeddings.
-
-### Missing Skill Detection
-Identifies important skills absent from the resume.
-
-### Career Role Prediction
-Predicts top career roles based on semantic similarity across 40+ tech roles.
-
-### ATS Resume Score
-Calculates an ATS-style score based on skills, projects, and role alignment.
-
-### Skill Evidence Extraction
-Finds resume sentences that support detected skills.
-
----
-
-# System Architecture
-
-User Upload Resume
+```
+resume (PDF/DOCX) ──► parse (pdfplumber / python-docx, in memory)
         │
-        ▼
- Resume Parser
+        ├─► skills: exact match against data/skills.csv (180+ skills with aliases)
+        ├─► embeddings: all-MiniLM-L6-v2 via fastembed (ONNX), resume embedded in ~60-word chunks
         │
-        ▼
- Skill Extraction (Embeddings)
-        │
-        ├── Resume Skills
-        ├── Job Skills
-        │
-        ▼
- Semantic Matching
-        │
-        ▼
- Career Role Prediction
-        │
-        ▼
- ATS Scoring + Evidence Extraction
-        │
-        ▼
- Interactive Dashboard
-
----
-
-# Tech Stack
-
-Backend
-FastAPI  
-Python  
-Sentence Transformers  
-Scikit-learn  
-
-Frontend
-HTML  
-TailwindCSS  
-Chart.js  
-
-ML Components
-Sentence Embeddings  
-Cosine Similarity  
-Semantic Skill Detection  
-
----
-
-# Demo Dashboard
-
-![Dashboard](screenshots/dashboard.png)
-
----
-
-# Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/yourusername/resume-intelligence-ai
-cd resume-intelligence-ai
+        ├─► job match = 60% skill coverage + 40% semantic similarity
+        ├─► best-fit roles = role skill coverage + similarity   (data/roles.json)
+        ├─► ATS checks = deterministic rules, 100 points
+        ├─► review + email drafts ─► Groq (openai/gpt-oss-120b by default)
+        ├─► jobs ─► JSearch API ─► ranked by skill overlap + similarity, skill demand counted
+        └─► faculty ─► professors.csv embedded once at startup, ranked by similarity + shared skills
 ```
 
-Create environment
+| Path | What's in it |
+| --- | --- |
+| `app/main.py` | FastAPI routes, upload limits, rate limiting |
+| `app/analysis.py` | Parsing, skill extraction, ATS checks, match score, role fit |
+| `app/jobs.py` | JSearch client, skill-demand trends, job-page scraper |
+| `app/outreach.py` | Faculty matching and email drafting (LLM with a template fallback) |
+| `app/llm.py` | Groq client and the review prompt |
+| `frontend/` | Single page, plain HTML/CSS/JS, no build step |
+
+## Run locally
 
 ```bash
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-Run the server
-
-```bash
+export GROQ_API_KEY=...        # optional: written review + AI email drafts
+export OPENWEBNINJA_API_KEY=... # optional: live job listings (or RAPIDAPI_KEY)
 uvicorn app.main:app --reload
 ```
 
-Open in browser
+Open http://127.0.0.1:8000. The embedding model (about 90 MB) downloads on first run.
 
+Every key is optional. Without them the app still scores resumes, still shows LinkedIn search links, and still drafts emails from a template.
+
+## Environment variables
+
+| Variable | Needed for | Where to get it |
+| --- | --- | --- |
+| `GROQ_API_KEY` | Recruiter review, personalised emails | [console.groq.com](https://console.groq.com/keys) (free tier) |
+| `GROQ_MODEL` | Override the model (default `openai/gpt-oss-120b`) | [Groq models](https://console.groq.com/docs/models) |
+| `OPENWEBNINJA_API_KEY` | Live job listings | Free plan on [OpenWeb Ninja](https://www.openwebninja.com/) (the JSearch provider). Results are cached for 6 hours to save quota. |
+| `RAPIDAPI_KEY` | Live job listings, alternative | Use instead if you subscribe to [JSearch on RapidAPI](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) |
+| `PROFESSORS_CSV` | Faculty matching | Path to the faculty CSV (see below) |
+
+## Deploy on Render
+
+The repo has a `Dockerfile`, so the existing Render web service keeps working:
+
+1. Push this branch and point the service at it (or merge to `main`).
+2. In **Environment**, add `GROQ_API_KEY` and `OPENWEBNINJA_API_KEY`. Delete the old `TRANSFORMERS_CACHE`; nothing uses it now.
+3. In **Environment > Secret Files**, add a file named `professors.csv` and set `PROFESSORS_CSV=/etc/secrets/professors.csv`.
+4. Set **Health Check Path** to `/api/health`.
+
+The image bakes in the embedding model and uses fastembed (ONNX) instead of PyTorch, which cuts memory use by several hundred MB, so it should fit the free tier's 512 MB. On the free tier, the first request after the service has been idle takes about a minute while it wakes up.
+
+### Faculty data
+
+`data/professors.csv` (columns `name,institute,department,interests,email`) is **gitignored on purpose**. It is a compiled directory of people's contact details. Keeping it out of the public repo, and only ever showing the top matches per resume, stops it from being scraped wholesale.
+
+## Tests
+
+```bash
+pip install pytest && pytest -q
 ```
-http://127.0.0.1:8000
-```
 
----
+The tests use a fake embedder, so they run offline in under a second.
 
-# Example Output
+## Notes and limits
 
-Match Score: 78%
+- Skill matching is exact (with aliases). Ambiguous words like "Excel", "React" and "Go" only match with their usual capitalisation, so "excel at" doesn't count as Excel.
+- The job-link scraper reads schema.org `JobPosting` data first. That covers Greenhouse, Lever, Workday, Naukri and most career sites. LinkedIn often blocks automated reads, and when it does the app asks you to paste the description instead.
+- Rate limits are per process and in memory, which is fine for a single Render instance.
 
-Top Roles:
-- Computer Vision Engineer
-- Machine Learning Engineer
-- AI Engineer
-
-Missing Skills:
-- Docker
-- AWS
-
-ATS Score:
-- Skills: 30
-- Role Fit: 24
-- Projects: 18
-- Education: 14
-
-![alt text](image.png)
-![alt text](image-1.png)
----
-
-# Future Improvements
-
-• LLM-based resume feedback  
-• Real-time job scraping  
-• Industry skill demand analysis  
-• Multi-language resume support  
-
----
-
-# Author
-
-Roshan Nair  
-
+Built by [Roshan Nair](https://github.com/roshannair-04).

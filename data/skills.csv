@@ -1,0 +1,186 @@
+Python
+Java
+C
+C++
+C#
+=Go,Golang
+=Rust
+JavaScript,JS,ES6
+TypeScript
+=Kotlin
+=Swift
+=Dart
+PHP
+=Ruby
+Scala
+MATLAB
+R
+=Julia
+SQL
+Bash
+PowerShell
+Shell Scripting,Shell Script
+Assembly
+Data Structures,DSA
+Algorithms
+Object-Oriented Programming,OOP,OOPs
+Functional Programming
+Multithreading
+Concurrency
+Parallel Computing
+Design Patterns,Software Design Patterns
+System Design
+API Design
+Machine Learning,ML
+Deep Learning,DL
+Reinforcement Learning
+Transfer Learning
+Supervised Learning
+Unsupervised Learning
+Neural Networks,CNN,RNN,LSTM
+Generative AI,GenAI,Gen AI
+Large Language Models,LLM,LLMs
+Prompt Engineering
+RAG,Retrieval Augmented Generation,Retrieval-Augmented Generation
+LangChain
+LlamaIndex
+Vector Databases,Vector Database,Pinecone,FAISS,ChromaDB,Weaviate,Qdrant
+OpenAI API
+TensorFlow
+PyTorch
+Keras
+Scikit-learn,sklearn,scikit learn
+XGBoost
+LightGBM
+CatBoost
+Hugging Face,HuggingFace,=Transformers
+spaCy
+NLTK
+Natural Language Processing,NLP
+Computer Vision
+Speech Recognition
+Recommendation Systems,Recommender Systems
+Time Series Forecasting,Time Series
+Anomaly Detection
+Feature Engineering
+Hyperparameter Tuning
+Model Deployment
+MLOps
+MLflow
+NumPy
+Pandas
+SciPy
+Matplotlib
+Seaborn
+Plotly
+OpenCV
+YOLO,YOLOv5,YOLOv7,YOLOv8,YOLOv11
+Detectron2
+MediaPipe
+Image Processing
+Data Analysis,Data Analytics
+Data Cleaning
+Data Visualization
+Exploratory Data Analysis,EDA
+Statistics,Statistical Modeling,Statistical Analysis
+Probability
+A/B Testing
+=Excel,MS Excel,Microsoft Excel
+Power BI,PowerBI
+Tableau
+=Looker
+Big Data
+Hadoop
+=Spark,Apache Spark
+PySpark
+Kafka,Apache Kafka
+Airflow,Apache Airflow
+dbt
+ETL,ELT
+Data Warehousing,Data Warehouse,Snowflake,BigQuery,Redshift
+Linux,Ubuntu
+Networking,TCP/IP
+REST APIs,REST API,RESTful,=REST
+GraphQL
+gRPC
+WebSockets,WebSocket
+Git
+GitHub
+GitLab
+CI/CD,CI CD
+Jenkins
+GitHub Actions
+Docker
+Kubernetes,K8s
+=Helm
+Terraform
+Ansible
+AWS,Amazon Web Services,EC2,S3,AWS Lambda
+Google Cloud,GCP,Google Cloud Platform
+Azure,Microsoft Azure
+Firebase
+Supabase
+Vercel
+FastAPI
+Flask
+Django
+Spring Boot
+Express.js
+Node.js,NodeJS
+=React,React.js,ReactJS
+Next.js,NextJS
+Angular
+Vue.js,Vue
+Svelte
+Redux
+HTML,HTML5
+CSS,CSS3
+Tailwind CSS,Tailwind,TailwindCSS
+Bootstrap
+Figma
+React Native
+=Flutter
+Android
+iOS
+PostgreSQL,Postgres
+MySQL
+SQLite
+MongoDB
+Redis
+Elasticsearch
+Cassandra
+DynamoDB
+Microservices
+Serverless
+Message Queues,RabbitMQ
+Web Scraping,BeautifulSoup,Scrapy
+Selenium
+Playwright
+Embedded Systems
+Microcontrollers
+Arduino
+Raspberry Pi
+ESP32
+RTOS
+FPGA
+Verilog
+VHDL
+Signal Processing
+Control Systems
+Robotics
+ROS
+SLAM
+Cybersecurity,Information Security
+Penetration Testing
+Cryptography,Encryption
+OAuth
+JWT
+Unit Testing,pytest,JUnit,Jest
+Test Automation
+Blockchain
+Solidity
+=Unity
+=Agile,Scrum
+Jira
+Product Management
+Project Management
