@@ -18,7 +18,9 @@ def embed(texts):
             from fastembed import TextEmbedding
 
             _model = TextEmbedding(MODEL, cache_dir=os.getenv("FASTEMBED_CACHE", ".models"))
-    vecs = np.array(list(_model.embed(list(texts))), dtype=np.float32)
+    # Small batches: attention memory grows with batch x tokens^2. fastembed's default of 256
+    # spikes past 800 MB and gets the process OOM-killed on Render's 512 MB free tier.
+    vecs = np.array(list(_model.embed(list(texts), batch_size=32)), dtype=np.float32)
     return vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
 
 

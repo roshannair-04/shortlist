@@ -57,7 +57,7 @@ def upstream(e: Exception, what: str):
     return HTTPException(502, f"The {what} service didn't respond. Try again in a minute.")
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])  # Render probes with HEAD
 def home():
     return FileResponse(ROOT / "frontend" / "index.html")
 
