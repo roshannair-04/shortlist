@@ -13,3 +13,4 @@ venv/
 data/professors.csv
 tests/*.pdf
 *.resume.pdf
+data/faculty_vectors.npz

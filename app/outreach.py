@@ -3,6 +3,7 @@
 The faculty directory is private data. It's read from PROFESSORS_CSV (a Render secret
 file in production) and is gitignored, so it never lands in the public repo."""
 import csv
+import hashlib
 import os
 import re
 import threading
@@ -39,9 +40,23 @@ def vectors():
         return _vectors()
 
 
+CACHE = DATA / "faculty_vectors.npz"  # built inside the Docker image; see Dockerfile
+
+
 @lru_cache
 def _vectors():
-    return embed([f"{r['interests'] or r['department']}. Department of {r['department']}" for r in rows()])
+    texts = [f"{r['interests'] or r['department']}. Department of {r['department']}" for r in rows()]
+    key = hashlib.sha256("\n".join(texts).encode()).hexdigest()
+    if CACHE.exists():
+        z = np.load(CACHE)
+        if str(z["key"]) == key:
+            return z["vecs"]
+    vecs = embed(texts)  # slow on a 0.1-CPU free instance: minutes for 1,600 rows
+    try:
+        np.savez(CACHE, key=key, vecs=vecs)
+    except OSError:
+        pass
+    return vecs
 
 
 def institutes() -> list[str]:
@@ -126,3 +141,7 @@ def _template(p: dict, skills: list[str], r: dict, purpose: str) -> dict:
             f"I would value the chance to contribute to {org}. My resume is attached for your consideration.\n\n"
             f"{links}\n\nThank you for your time.\n{name}\n{p.get('phone') or '[Phone]'}")
     return {"subject": subject, "body": body}
+
+
+if __name__ == "__main__":  # Docker build step: embed the faculty list once, at build time
+    print(f"faculty vectors: {len(vectors()) if rows() else 0}")

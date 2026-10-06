@@ -8,3 +8,4 @@ tests
 screenshots
 data/professors.csv
 *.pdf
+data/faculty_vectors.npz
