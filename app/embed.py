@@ -13,14 +13,15 @@ _lock = threading.Lock()
 def embed(texts):
     """Return an (n, 384) array of unit-length vectors, so a dot product is cosine similarity."""
     global _model
+    # One inference at a time, one thread, small batches: on Render's 512 MB free tier,
+    # parallel requests each holding their own attention buffers got the process OOM-killed.
+    # ponytail: serialises embedding; fine at this traffic, use a bigger instance to parallelise.
     with _lock:
         if _model is None:
             from fastembed import TextEmbedding
 
-            _model = TextEmbedding(MODEL, cache_dir=os.getenv("FASTEMBED_CACHE", ".models"))
-    # Small batches: attention memory grows with batch x tokens^2. fastembed's default of 256
-    # spikes past 800 MB and gets the process OOM-killed on Render's 512 MB free tier.
-    vecs = np.array(list(_model.embed(list(texts), batch_size=32)), dtype=np.float32)
+            _model = TextEmbedding(MODEL, cache_dir=os.getenv("FASTEMBED_CACHE", ".models"), threads=1)
+        vecs = np.array(list(_model.embed(list(texts), batch_size=16)), dtype=np.float32)
     return vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
 
 

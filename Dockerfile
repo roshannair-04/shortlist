@@ -1,6 +1,7 @@
 FROM python:3.12-slim
 
-ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 FASTEMBED_CACHE=/app/.models
+# MALLOC_ARENA_MAX / OMP_NUM_THREADS keep per-thread memory overhead low on the 512 MB instance.
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 FASTEMBED_CACHE=/app/.models MALLOC_ARENA_MAX=2 OMP_NUM_THREADS=1
 WORKDIR /app
 
 COPY requirements.txt .
